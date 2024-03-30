@@ -5,8 +5,7 @@
         <img id="logo" src="@/assets/img/emoji/route.png" alt="" /><span
           id="text"
           >RouteGPT: </span
-        ><span>route recommendation based on user preferences </span
-        >
+        ><span>route recommendation based on user preferences </span>
       </div>
       <div id="user-case">case | note</div>
     </div>
@@ -19,14 +18,32 @@
         <div id="center-top">
           <!-- <div id="map-title"><span>Map Title</span></div>
           <div id="map-content"> -->
-            <mapcontent :routeInfoList = "routeInfoList" @setChooseRoadIndex = "setChooseRoadIndex"></mapcontent>
+          <mapcontent
+            :routeInfoList="routeInfoList"
+            :pickPointItem="pickPointItem"
+            @setChooseRoadIndex="setChooseRoadIndex"
+          ></mapcontent>
           <!-- </div> -->
         </div>
-        <!-- <div id="center-bottom">中间栏</div> -->
+        <div id="center-bottom"><keywordcontent></keywordcontent></div>
       </section>
       <section class="right-column">
-        <div id="right-top"><tagcontent :dynamicTags = "poiList"></tagcontent></div>
-        <div id="right-bottom"><descontent :roadDes = "roadDes"></descontent></div>
+        <div id="right-top">
+          <leaderboard
+            :routeInfoList="routeInfoList"
+            :homeRoadIndex="homeRoadIndex"
+          ></leaderboard>
+        </div>
+        <div id="right-center">
+          <tagcontent
+            :dynamicTags="poiList"
+            :distanceList="distanceList"
+            @pickPoint="setPickPoint"
+          ></tagcontent>
+        </div>
+        <div id="right-bottom">
+          <descontent :roadDes="roadDes"></descontent>
+        </div>
       </section>
     </div>
   </div>
@@ -36,47 +53,62 @@ import Chatwin from "@/components/Chatwin.vue";
 import Mapcontent from "@/components/Mapcontent.vue";
 import Descontent from "@/components/Descontent.vue";
 import Tagcontent from "@/components/Tagcontent.vue";
-import {getRecomRouteMsg} from "@/api/getData";
+import Keywordcontent from "@/components/Keywordcontent.vue";
+import Leaderboard from "@/components/Leaderboard.vue";
+import { getRecomRouteMsg } from "@/api/getData";
 export default {
   components: {
     Chatwin,
     Mapcontent,
     Descontent,
-    Tagcontent
+    Tagcontent,
+    Keywordcontent,
+    Leaderboard,
   },
   data() {
     return {
       routeInfoList: [],
-      homeRoadIndex:0,
-      poiList:[],
-      roadDes:"This is the route Description. You can get some text description from this box!Starting from Times Square, head south on Broadway Avenue towards 42nd Street. Turn left onto 7th Avenue and continue until you reach 34th Street. Turn right onto 34th Street and walk west towards the Hudson River. Cross over the Hudson River via the Lincoln Tunnel and continue onto NJ-495 West. Follow signs for New Jersey Turnpike/I-95 South. Merge onto I-95 South and continue for approximately 10 miles. Take exit 16E towards Lincoln Tunnel/NJ-495 East and merge onto NJ-495 East. Cross back over the Hudson River via the Lincoln Tunnel and follow signs for 42nd Street. Exit the tunnel and turn right onto 42nd Street. Continue east on 42nd Street until you reach Times Square."
-    }
+      homeRoadIndex: 0,
+      poiList: [],
+      distanceList: [],
+      pickPointItem: {},
+      roadDes:
+        "This is the route Description. You can get some text description from this box!Starting from Times Square, head south on Broadway Avenue towards 42nd Street. Turn left onto 7th Avenue and continue until you reach 34th Street. Turn right onto 34th Street and walk west towards the Hudson River. Cross over the Hudson River via the Lincoln Tunnel and continue onto NJ-495 West. Follow signs for New Jersey Turnpike/I-95 South. Merge onto I-95 South and continue for approximately 10 miles. Take exit 16E towards Lincoln Tunnel/NJ-495 East and merge onto NJ-495 East. Cross back over the Hudson River via the Lincoln Tunnel and follow signs for 42nd Street. Exit the tunnel and turn right onto 42nd Street. Continue east on 42nd Street until you reach Times Square.",
+    };
   },
-  methods:{
-    async setGPTText(GPTText){
-      let {data: res} = await getRecomRouteMsg(GPTText)
-      if (res.code !== 200){
-        console.error("getRecomRouteMsg error")
-        return 
-      }
+  methods: {
+    async setGPTText(GPTText) {
+      let { data: res } = await getRecomRouteMsg(GPTText);
+      // if (res.code !== 200){
+      //   console.error("getRecomRouteMsg error")
+      //   return
+      // }
       this.routeInfoList = res.data.route_list;
       this.updateText();
       this.updateTag();
-      console.log("routeInfoList",this.routeInfoList);
+      this.updateDistance();
+      console.log("routeInfoList", this.routeInfoList);
     },
     setChooseRoadIndex(chooseRoadIndex) {
-      this.homeRoadIndex = chooseRoadIndex
+      this.homeRoadIndex = chooseRoadIndex;
       // 更新文本
       this.updateText();
       this.updateTag();
+      this.updateDistance();
     },
-    updateText(){
-      this.roadDes = this.routeInfoList[this.homeRoadIndex].route_description
+    setPickPoint(pickPointItem) {
+      this.pickPointItem = JSON.parse(JSON.stringify(pickPointItem));
+    },
+    updateText() {
+      this.roadDes = this.routeInfoList[this.homeRoadIndex].route_description;
     },
     updateTag() {
       this.poiList = this.routeInfoList[this.homeRoadIndex].poi_list;
-    }
-  }
+    },
+    updateDistance() {
+      this.distanceList = this.routeInfoList[this.homeRoadIndex].distance_list;
+    },
+  },
 };
 </script>
 <style  lang="less" scoped>
@@ -148,10 +180,10 @@ export default {
   }
   .center-column {
     height: 100%;
-    width: 40%;
+    width: 50%;
     overflow: hidden;
     #center-top {
-      height: 93%;
+      height: 70%;
       position: relative;
       background-color: #e7e5ed;
       margin: 0.25rem;
@@ -176,31 +208,39 @@ export default {
         background-color: #e66f6f;
       }
     }
-    // #center-bottom {
-    //   background-color: #fff;
-    //   height: 28%;
-    //   margin: .3125rem;
-    //   position: relative;
-    //   border-radius: 10px;
-    // }
+    #center-bottom {
+      background-color: #e7e5ed;
+      height: 22.3%;
+      margin: 0.3125rem;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+    }
   }
   .right-column {
     height: 100%;
     // display: flex;
     // flex-direction: column;
-    width: 40%;
+    width: 30%;
     #right-top {
       background-color: #e7e5ed;
       margin: 0.25rem;
       // flex: 4;
-      height: 38%;
+      height: 35%;
       position: relative;
       border-radius: 10px;
       overflow: hidden;
     }
+    #right-center {
+      background-color: #e7e5ed;
+      height: 34%;
+      margin: 0.3125rem;
+      position: relative;
+      border-radius: 10px;
+    }
     #right-bottom {
       background-color: #e7e5ed;
-      height: 54%;
+      height: 23%;
       // flex: 6;
       margin: 0.3125rem;
       position: relative;

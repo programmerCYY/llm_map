@@ -2,7 +2,7 @@ import axios from 'axios'
 
 //全局参数，自定义参数可在发送请求时设置
 axios.defaults.timeout = 300000000 //超时时间ms
-axios.defaults.withCredentials = true
+// axios.defaults.withCredentials = true
 // 请求时的拦截
 //回调里面不能获取错误信息
 axios.interceptors.request.use(
@@ -32,7 +32,7 @@ const base = {
   axios: axios,
   //baseUrl: 'http://localhost:8080'
   baseUrl: 'https://mock.mengxuegu.com/mock/65fd3f4c838cf807b819d83e/example'
-  // baseUrl: 'http://10.120.16.200:6789/gpt_routing/v10'
+  // baseUrl: 'http://10.120.16.200:6789'
 }
 
 export default base

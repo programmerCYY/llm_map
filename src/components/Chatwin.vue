@@ -171,7 +171,7 @@ export default {
           this.chatList.push(finishText);
           //启动动画
           //传值
-          this.$emit('setGPTText',{userDescription: this.userDescription, demandDescription: this.demandDescription})
+          this.$emit('setGPTText',{user_description: this.userDescription, demand_description: this.demandDescription})
 
           break;
         }

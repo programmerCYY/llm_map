@@ -10,12 +10,17 @@ export default {
   name: "GGMap",
   props: {
     routeInfoList: Array,
+    pickPointItem: Object,
   },
   watch: {
     routeInfoList() {
       this.clearPositionInfoList();
       this.changeRouteKey();
       this.changePoints();
+      this.mapBuild();
+      this.drawRoad(0);
+    },
+    pickPointItem() {
       this.mapBuild();
       this.drawRoad(0);
     },
@@ -137,9 +142,18 @@ export default {
           //console.log("点击事件", e);
           infowindow.open({
             anchor: marker,
-            map:this.mapInstance
-          })
+            map: this.mapInstance,
+          });
         });
+        if (
+          this.pickPointItem &&
+          this.pickPointItem.poi_id === positionPointInfoItem.positionId
+        ) {
+          infowindow.open({
+            anchor: marker,
+            map: this.mapInstance,
+          });
+        }
       });
     },
     drawRoad(clickRoadId = -1) {

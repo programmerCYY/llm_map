@@ -24,8 +24,8 @@ export const getRecomRouteMsg = params => {
   return axios({
     method: 'post',
     baseURL: `${baseUrl}/route/routeRecom`,
-    // baseURL: baseUrl,
-    data: params
+    // baseURL: `${baseUrl}/gpt_routing/v10`,
+    data: { req_body: params}
   }).then(res => res)
 }
 
